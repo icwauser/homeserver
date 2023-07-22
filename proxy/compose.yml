@@ -1,0 +1,72 @@
+version: '3.8'
+services:
+  reverseProxy:
+    image: 'jc21/nginx-proxy-manager:latest'
+    depends_on:
+      - wordpress
+      - pma
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - reverseProxy_data:/data
+      - reverseProxy_letsencrypt:/etc/letsencrypt
+      - ./ssh:/root/.ssh:ro
+    networks:
+      - proxy-wordpress
+      - proxy-pma
+    
+  wordpress:
+    image: wordpress
+    depends_on:
+      - database
+    environment:
+      WORDPRESS_DB_HOST: database
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - ./wordpress:/var/www/html/wp-content
+    networks:
+      - database-wordpress
+      - proxy-wordpress
+      
+  database:
+    image: mariadb
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: sdajkfghjklsdgh
+    volumes:
+      - database:/var/lib/mysql
+    networks:
+      - database-pma
+      - database-wordpress
+      
+  pma:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - database
+    environment:
+      PMA_HOST: database
+      MYSQL_ROOT_PASSWORD: sdajkfghjklsdgh 
+    networks:
+      - database-pma
+      - proxy-pma
+ 
+volumes:
+  database:
+  reverseProxy_data:
+  reverseProxy_letsencrypt:
+
+networks:
+  proxy-wordpress:
+  proxy-pma:
+  database-pma:
+  database-wordpress:
+  proxy-git:
+  proxy-nextcloud:
+  proxy-ha:

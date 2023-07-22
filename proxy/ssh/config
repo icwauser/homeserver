@@ -1,0 +1,5 @@
+Host vps
+  HostName vps.v3.splettigit.de
+  User sshuser
+  Port 2222
+  IdentityFile ~/.ssh/id_proxy
